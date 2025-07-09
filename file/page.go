@@ -5,14 +5,32 @@ import (
 	"io"
 )
 
+// How data is stored in a Page at a given `offset`:
+//
+//	 [ Record starts at `offset` ]
+//	<------------------ 4 + N bytes ------------------>
+//	+-----------------+-------------------------------+
+//	|   Length (size) |            Content            |
+//	|    (4 bytes)    |           (N bytes)           |
+//	+-----------------+-------------------------------+
+//	^                 ^                               ^
+//	|                 |                               |
+//
+// offset           offset + 4                      offset + 4 + N
+
+// Page provides methods for reading and writing data to a fixed-size byte slice,
+// which corresponds to a disk block. It is essentially a wrapper around a []byte
+// that provides convenient, offset-based I/O operations.
 type Page struct {
 	buf []byte
 }
 
+// NewPage creates a new page backed by a byte slice of the specified size.
 func NewPage(blockSize int32) *Page {
 	return &Page{buf: make([]byte, blockSize)}
 }
 
+// Buf returns the underlying byte slice of the page.
 func (p *Page) Buf() []byte {
 	return p.buf
 }
