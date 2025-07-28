@@ -16,3 +16,7 @@ func (b *Block) Filename() string {
 func (b *Block) Number() int32 {
 	return b.number
 }
+
+func (b *Block) Equals(block *Block) bool {
+	return b.filename == block.filename && b.number == block.number
+}
