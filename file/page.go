@@ -30,6 +30,11 @@ func NewPage(blockSize int32) *Page {
 	return &Page{buf: make([]byte, blockSize)}
 }
 
+// NewPageFromBuf creates a new page that wraps an existing byte slice.
+func NewPageFromBuf(buf []byte) *Page {
+	return &Page{buf: buf}
+}
+
 // Buf returns the underlying byte slice of the page.
 func (p *Page) Buf() []byte {
 	return p.buf
@@ -103,4 +108,8 @@ func (p *Page) ReadStringAt(offset int32) (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+
+func (p *Page) MaxLength(s string) int32 {
+	return int32(len(s)) + 4
 }
