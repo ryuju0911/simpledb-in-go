@@ -20,6 +20,14 @@ func NewLayout(schema *Schema) *Layout {
 	}
 }
 
+func NewLayoutFromMetadata(schema *Schema, offsets map[string]int32, slotSize int32) *Layout {
+	return &Layout{
+		schema:   schema,
+		offsets:  offsets,
+		slotSize: slotSize,
+	}
+}
+
 func (l *Layout) Schema() *Schema {
 	return l.schema
 }

@@ -68,10 +68,11 @@ func (ts *TableScan) Next() (bool, error) {
 		if err := ts.moveToBlock(ts.recordPage.Block().Number() + 1); err != nil {
 			return false, err
 		}
-		ts.currentSlot, err = ts.recordPage.NextAfter(ts.currentSlot)
+		slot, err = ts.recordPage.NextAfter(ts.currentSlot)
 		if err != nil {
 			return false, err
 		}
+		ts.currentSlot = slot
 	}
 	return true, nil
 }

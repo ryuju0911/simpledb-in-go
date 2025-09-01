@@ -45,6 +45,10 @@ func (s *Schema) Add(fieldName string, schema *Schema) {
 	s.AddField(fieldName, fieldType, length)
 }
 
+func (s *Schema) Fields() []string {
+	return s.fields
+}
+
 func (s *Schema) HasField(fieldName string) bool {
 	_, exist := s.info[fieldName]
 	return exist
