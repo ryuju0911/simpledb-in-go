@@ -46,35 +46,35 @@ func (ts *TableScan) Close() {
 	}
 }
 
-func (ts *TableScan) BeforeFirst() error {
-	return ts.moveToBlock(0)
+func (ts *TableScan) BeforeFirst() {
+	ts.moveToBlock(0)
 }
 
-func (ts *TableScan) Next() (bool, error) {
+func (ts *TableScan) Next() bool {
 	slot, err := ts.recordPage.NextAfter(ts.currentSlot)
 	if err != nil {
-		return false, err
+		return false
 	}
 	ts.currentSlot = slot
 
 	for slot < 0 {
 		lastBlock, err := ts.atLastBlock()
 		if err != nil {
-			return false, err
+			return false
 		}
 		if lastBlock {
-			return false, nil
+			return false
 		}
 		if err := ts.moveToBlock(ts.recordPage.Block().Number() + 1); err != nil {
-			return false, err
+			return false
 		}
 		slot, err = ts.recordPage.NextAfter(ts.currentSlot)
 		if err != nil {
-			return false, err
+			return false
 		}
 		ts.currentSlot = slot
 	}
-	return true, nil
+	return true
 }
 
 func (ts *TableScan) ReadInt32(fieldName string) (int32, error) {
@@ -85,47 +85,50 @@ func (ts *TableScan) ReadString(fieldName string) (string, error) {
 	return ts.recordPage.ReadString(ts.currentSlot, fieldName)
 }
 
+func (ts *TableScan) ReadValue(fieldName string) (any, error) {
+	if ts.layout.Schema().FieldType(fieldName) == Integer {
+		return ts.ReadInt32(fieldName)
+	}
+	return ts.ReadString(fieldName)
+}
+
 func (ts *TableScan) HasField(fieldName string) bool {
 	return ts.layout.Schema().HasField(fieldName)
 }
 
-func (ts *TableScan) WriteInt32(fieldName string, value int32) error {
-	return ts.recordPage.WriteInt32(ts.currentSlot, fieldName, value)
+func (ts *TableScan) WriteInt32(fieldName string, value int32) {
+	ts.recordPage.WriteInt32(ts.currentSlot, fieldName, value)
 }
 
-func (ts *TableScan) WriteString(fieldName string, value string) error {
-	return ts.recordPage.WriteString(ts.currentSlot, fieldName, value)
+func (ts *TableScan) WriteString(fieldName string, value string) {
+	ts.recordPage.WriteString(ts.currentSlot, fieldName, value)
 }
 
-func (ts *TableScan) Insert() error {
-	slot, err := ts.recordPage.InsertAfter(ts.currentSlot)
-	if err != nil {
-		return err
+func (ts *TableScan) WriteValue(fieldName string, value any) {
+	if ts.layout.Schema().FieldType(fieldName) == Integer {
+		ts.WriteInt32(fieldName, value.(int32))
+	} else {
+		ts.WriteString(fieldName, value.(string))
 	}
+}
+
+func (ts *TableScan) Insert() {
+	slot, _ := ts.recordPage.InsertAfter(ts.currentSlot)
 	ts.currentSlot = slot
 
 	for ts.currentSlot < 0 {
-		lastBlock, err := ts.atLastBlock()
-		if err != nil {
-			return err
-		}
+		lastBlock, _ := ts.atLastBlock()
 		if lastBlock {
-			if err := ts.moveToNewBlock(); err != nil {
-				return err
-			}
+			ts.moveToNewBlock()
 		} else {
-			if err := ts.moveToBlock(ts.recordPage.Block().Number() + 1); err != nil {
-				return err
-			}
+			ts.moveToBlock(ts.recordPage.Block().Number() + 1)
 		}
-		ts.currentSlot, err = ts.recordPage.InsertAfter(ts.currentSlot)
+		ts.currentSlot, _ = ts.recordPage.InsertAfter(ts.currentSlot)
 	}
-
-	return nil
 }
 
-func (ts *TableScan) Delete() error {
-	return ts.recordPage.Delete(ts.currentSlot)
+func (ts *TableScan) Delete() {
+	ts.recordPage.Delete(ts.currentSlot)
 }
 
 func (ts *TableScan) MoveToRID(rid *RID) error {

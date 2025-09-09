@@ -67,11 +67,7 @@ func (sm *StatManager) refreshStatisics(tx *transaction.Transaction) {
 
 	tcatLayout := sm.tableManager.GetLayout("tblcat", tx)
 	tcat, _ := record.NewTableScan(tx, "tblcat", tcatLayout)
-	for {
-		exist, _ := tcat.Next()
-		if !exist {
-			break
-		}
+	for tcat.Next() {
 		tableName, _ := tcat.ReadString("tblname")
 		layout := sm.tableManager.GetLayout(tableName, tx)
 		info := sm.calcTableStats(tableName, layout, tx)
@@ -83,11 +79,7 @@ func (sm *StatManager) refreshStatisics(tx *transaction.Transaction) {
 func (sm *StatManager) calcTableStats(tableName string, layout *record.Layout, tx *transaction.Transaction) StatInfo {
 	var numRecords, numBlocks int32
 	tableScan, _ := record.NewTableScan(tx, tableName, layout)
-	for {
-		exist, _ := tableScan.Next()
-		if !exist {
-			break
-		}
+	for tableScan.Next() {
 		numRecords++
 		numBlocks = tableScan.GetRID().BlockNumber() + 1
 	}

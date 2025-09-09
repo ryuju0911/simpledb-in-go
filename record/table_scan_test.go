@@ -42,37 +42,18 @@ func TestTableScan(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := ts.BeforeFirst(); err != nil {
-		t.Fatal(err)
-	}
+	ts.BeforeFirst()
 
 	for range 50 {
-		if err := ts.Insert(); err != nil {
-			t.Fatal(err)
-		}
-
+		ts.Insert()
 		n := int32(rand.N(50))
-		if err := ts.WriteInt32("A", n); err != nil {
-			t.Fatal(err)
-		}
-		if err := ts.WriteString("B", fmt.Sprintf("rec%d", n)); err != nil {
-			t.Fatal(err)
-		}
+		ts.WriteInt32("A", n)
+		ts.WriteString("B", fmt.Sprintf("rec%d", n))
 	}
 
-	if err := ts.BeforeFirst(); err != nil {
-		t.Fatal(err)
-	}
+	ts.BeforeFirst()
 
-	for {
-		exist, err := ts.Next()
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !exist {
-			break
-		}
-
+	for ts.Next() {
 		a, err := ts.ReadInt32("A")
 		if err != nil {
 			t.Fatal(err)
@@ -83,25 +64,13 @@ func TestTableScan(t *testing.T) {
 		}
 
 		if a < 25 {
-			if err := ts.Delete(); err != nil {
-				t.Fatal(err)
-			}
+			ts.Delete()
 		}
 	}
 
-	if err := ts.BeforeFirst(); err != nil {
-		t.Fatal(err)
-	}
+	ts.BeforeFirst()
 
-	for {
-		exist, err := ts.Next()
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !exist {
-			break
-		}
-
+	for ts.Next() {
 		_, err = ts.ReadInt32("A")
 		if err != nil {
 			t.Fatal(err)

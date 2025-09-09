@@ -65,11 +65,7 @@ func (tm *TableManager) CreateTable(tableName string, schema *record.Schema, tx 
 func (tm *TableManager) GetLayout(tableName string, tx *transaction.Transaction) *record.Layout {
 	var size int32 = -1
 	tcat, _ := record.NewTableScan(tx, "tblcat", tm.tcatLayout)
-	for {
-		exist, _ := tcat.Next()
-		if !exist {
-			break
-		}
+	for tcat.Next() {
 		name, _ := tcat.ReadString("tblname")
 		if name == tableName {
 			size, _ = tcat.ReadInt32("slotsize")
@@ -81,11 +77,7 @@ func (tm *TableManager) GetLayout(tableName string, tx *transaction.Transaction)
 	schema := record.NewSchema()
 	offsets := make(map[string]int32)
 	fcat, _ := record.NewTableScan(tx, "fldcat", tm.fcatLayout)
-	for {
-		exist, _ := fcat.Next()
-		if !exist {
-			break
-		}
+	for fcat.Next() {
 		name, _ := fcat.ReadString("tblname")
 		if name == tableName {
 			fieldName, _ := fcat.ReadString("fldname")

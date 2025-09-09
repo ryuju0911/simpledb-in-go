@@ -37,11 +37,7 @@ func (vm *ViewManager) CreateView(viewName string, viewDef string, tx *transacti
 func (vm *ViewManager) GetViewDef(viewName string, tx *transaction.Transaction) string {
 	layout := vm.tableManager.GetLayout("viewcat", tx)
 	tableScan, _ := record.NewTableScan(tx, "viewcat", layout)
-	for {
-		exist, _ := tableScan.Next()
-		if !exist {
-			break
-		}
+	for tableScan.Next() {
 		name, _ := tableScan.ReadString("viewname")
 		if name == viewName {
 			viewDef, _ := tableScan.ReadString("viewdef")

@@ -86,11 +86,7 @@ func (im *IndexManager) CreateIndex(indexName string, tableName string, fieldNam
 func (im *IndexManager) GetIndexInfo(tableName string, tx *transaction.Transaction) map[string]*IndexInfo {
 	res := make(map[string]*IndexInfo)
 	tableScan, _ := record.NewTableScan(tx, "idxcat", im.layout)
-	for {
-		exist, _ := tableScan.Next()
-		if !exist {
-			break
-		}
+	for tableScan.Next() {
 		indexName, _ := tableScan.ReadString("tablename")
 		if indexName == tableName {
 			indexName, _ := tableScan.ReadString("indexname")
